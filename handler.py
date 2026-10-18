@@ -6,13 +6,16 @@ import runpod
 
 BASE = "http://127.0.0.1:8000"
 
-# ponytail: all vLLM flags come from env, so one image serves any model
-proc = subprocess.Popen(
-    ["vllm", "serve", os.environ["MODEL_NAME"],
-     "--host", "127.0.0.1",
-     "--served-model-name", os.environ.get("SERVED_MODEL_NAME", "joycaption"),
-     *shlex.split(os.environ.get("VLLM_ARGS", ""))]
-)
+# ponytail: all server flags come from env, so one handler serves any model
+# SERVER_CMD swaps vLLM for another OpenAI-compatible server (llama.cpp image); it must listen on 127.0.0.1:8000
+if "SERVER_CMD" in os.environ:
+    cmd = shlex.split(os.environ["SERVER_CMD"])
+else:
+    cmd = ["vllm", "serve", os.environ["MODEL_NAME"],
+           "--host", "127.0.0.1",
+           "--served-model-name", os.environ.get("SERVED_MODEL_NAME", "joycaption"),
+           *shlex.split(os.environ.get("VLLM_ARGS", ""))]
+proc = subprocess.Popen(cmd)
 
 for _ in range(900):
     if proc.poll() is not None:

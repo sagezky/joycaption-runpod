@@ -23,3 +23,11 @@ jobs:
           tags: |
             ghcr.io/sagezky/joycaption-runpod:latest
             ghcr.io/sagezky/joycaption-runpod:${{ github.sha }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: llamacpp/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/sagezky/joycaption-runpod:llamacpp
+            ghcr.io/sagezky/joycaption-runpod:llamacpp-${{ github.sha }}

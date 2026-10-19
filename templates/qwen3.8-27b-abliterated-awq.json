@@ -1,0 +1,37 @@
+{
+  "_note": "Retired 2026-10-19 (JoyCaption gave more detailed, less softened captions; cold start too slow). Recreate: POST /v1/networkvolumes (30GB, CA-MTL-1), POST /v1/templates with `template`, POST /v1/endpoints with `endpoint` + templateId + networkVolumeId. --tokenizer is required: the AWQ repo's tokenizer.json truncates at 1024 tokens and breaks images. Measured on A40: 52-64 tok/s, cold 123s with volume cache (~350s without).",
+  "template": {
+    "name": "qwen3.8-27b-abliterated-awq",
+    "imageName": "ghcr.io/sagezky/joycaption-runpod:e51cba6d556f992df8fa134e5f9f114d9719ba36",
+    "containerDiskInGb": 20,
+    "env": {
+      "HF_HOME": "/runpod-volume/hf",
+      "MAX_CONCURRENCY": "4",
+      "MODEL_NAME": "twolven/Qwen3.8-27B-abliterated-AWQ-MTP",
+      "SERVED_MODEL_NAME": "qwen3.8-27b-abliterated",
+      "TRITON_CACHE_DIR": "/runpod-volume/triton-cache",
+      "VLLM_ARGS": "--tokenizer Qwen/Qwen3.8-27B-FP8 --max-model-len 32768 --max-num-seqs 32 --gpu-memory-utilization 0.92 --reasoning-parser qwen3 --limit-mm-per-prompt '{\"image\":4,\"video\":1}' --default-chat-template-kwargs '{\"reasoning_effort\":\"medium\"}' --speculative-config '{\"method\":\"mtp\",\"num_speculative_tokens\":3}' --compilation-config '{\"cudagraph_mode\":\"PIECEWISE\"}'",
+      "VLLM_CACHE_ROOT": "/runpod-volume/vllm-cache"
+    },
+    "isServerless": true
+  },
+  "endpoint": {
+    "name": "qwen3.8-27b-abliterated-awq",
+    "gpuTypeIds": [
+      "NVIDIA A40",
+      "NVIDIA RTX A6000",
+      "NVIDIA RTX 6000 Ada Generation",
+      "NVIDIA L40",
+      "NVIDIA L40S"
+    ],
+    "workersMin": 0,
+    "workersMax": 1,
+    "idleTimeout": 5,
+    "executionTimeoutMs": 600000,
+    "flashboot": true,
+    "networkVolume": {
+      "sizeGb": 30,
+      "dataCenterId": "CA-MTL-1"
+    }
+  }
+}
